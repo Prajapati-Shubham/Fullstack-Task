@@ -11,7 +11,7 @@ import bodyParser from "body-parser";
 import passport from "passport";
 import localStrategy from "passport-local";
 import session from "express-session";
-import ExpressError from "./utils/ExpressError.js";
+import ExpressError from "./utils/expressError.js";
 import userRoute from "./routes/userRoute.js";
 import User from "./models/user.js";
 const MONGO_URL =process.env.MONGO_URL;
