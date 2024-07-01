@@ -10,11 +10,14 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    IconButton
+    IconButton,
+    Box,
+    Button
 } from "@mui/material";
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import SettingsIcon from "@mui/icons-material/Settings";
 import CancelIcon from "@mui/icons-material/Cancel";
+import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 
 function getStatusIcon(status) {
     switch (status) {
@@ -71,73 +74,77 @@ const data = [
     },
 ];
 
-function Main() {
-    const navigate = useNavigate();
-    const [isLoggedIn, setIsLoggedIn] = useState(true);
-    const [userData, setUserData] = useState(null);
+function Main({ logout }) {
+    const [message, setMessage] = useState('');
+
     useEffect(() => {
-        const token = localStorage.getItem("accessToken");
-        const storedUserData = JSON.parse(localStorage.getItem("userData"));
+        const fetchData = async () => {
+            const token = localStorage.getItem('accessToken');
+            if (!token) return;
 
-        if (!token || !storedUserData) {
-            setIsLoggedIn(false);
-        } else {
-            // Verify token against stored token
-            const { token: storedToken } = storedUserData;
-            console.log(storedToken)
-            if (token !== storedToken) {
-                setIsLoggedIn(false);
-            } else {
-                setUserData(storedUserData);
-            }
-            if (!isLoggedIn) {
-                alert("You must be logged in to access this page");
-                navigate("/");
-            }
-        }
-    }, [navigate,isLoggedIn]);
+            try {
+                const { data } = await axios.get('http://localhost:8080/user/dashboard', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setMessage(data);
 
+            } catch (err) {
+                alert("Login to access this page");
+                setMessage('You are not authorized to view this page');
+            }
+            console.log(message);
+        };
+
+        fetchData();
+    }, []);
 
 
     return (
-        <TableContainer>
-            <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableCell>#</TableCell>
-                        <TableCell>Name</TableCell>
-                        <TableCell>Date Created</TableCell>
-                        <TableCell>Role</TableCell>
-                        <TableCell>Status</TableCell>
-                        <TableCell>Action</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {data.map((row) => (
-                        <TableRow key={row.id}>
-                            <TableCell>{row.id}</TableCell>
-                            <TableCell>
-                                <Stack direction="row" alignItems="center" spacing={1}>
-                                    <Avatar src={row.avatar} />
-                                    <span>{row.name}</span>
-                                </Stack>
-                            </TableCell>
-                            <TableCell>{row.dateCreated}</TableCell>
-                            <TableCell>{row.role}</TableCell>
-                            <TableCell>{getStatusIcon(row.status)}</TableCell>
-                            <TableCell>
-                                <IconButton>
-                                    <SettingsIcon sx={{ color: "blue" }} />
-                                </IconButton>
-                                <IconButton>
-                                    <CancelIcon sx={{ color: "red" }} />
-                                </IconButton>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </TableContainer>
+        <>
+
+            <Box display="flex" justifyContent="space-between" p={2}>
+                <TableContainer>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>#</TableCell>
+                                <TableCell>Name</TableCell>
+                                <TableCell>Date Created</TableCell>
+                                <TableCell>Role</TableCell>
+                                <TableCell>Status</TableCell>
+                                <TableCell>Action</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {data.map((row) => (
+                                <TableRow key={row.id}>
+                                    <TableCell>{row.id}</TableCell>
+                                    <TableCell>
+                                        <Stack direction="row" alignItems="center" spacing={1}>
+                                            <Avatar src={row.avatar} />
+                                            <span>{row.name}</span>
+                                        </Stack>
+                                    </TableCell>
+                                    <TableCell>{row.dateCreated}</TableCell>
+                                    <TableCell>{row.role}</TableCell>
+                                    <TableCell>{getStatusIcon(row.status)}</TableCell>
+                                    <TableCell>
+                                        <IconButton>
+                                            <SettingsIcon sx={{ color: "blue" }} />
+                                        </IconButton>
+                                        <IconButton>
+                                            <CancelIcon sx={{ color: "red" }} />
+                                        </IconButton>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+
+            </Box>
+            <Button onClick={logout}>Logout</Button>
+        </>
     );
 }
 

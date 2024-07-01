@@ -14,7 +14,7 @@ import session from "express-session";
 import ExpressError from "./utils/expressError.js";
 import userRoute from "./routes/userRoute.js";
 import User from "./models/user.js";
-const MONGO_URL =process.env.MONGO_URL;
+const MONGO_URL = process.env.MONGO_URL;
 
 main()
   .then(() => {
@@ -30,7 +30,7 @@ async function main() {
 
 //Express sesssion
 const sessionOptions = {
-  secret: "mySuperSceretCode",
+  secret: process.env.SECRET,
   resave: false,
   saveUninitialized: true,
   cookie: {
@@ -62,19 +62,21 @@ app.get("/", (req, res) => {
   res.send("Hii i am root");
 });
 
-app.use("*",(req,res,next)=>{
-    next(new ExpressError(404,"Page not found"));
+app.use("*", (req, res, next) => {
+  next(new ExpressError(404, "Page not found"));
 });
 
-app.use((err,req,res,next)=>{
-    let {statusCode=500, message="Something went wrong"}=err;
-    res.status(statusCode).json({message:message});
-},
-//Logging the error
-(err,req,res,next)=>{
-  console.log(err);
-  next();
-});
+app.use(
+  (err, req, res, next) => {
+    let { statusCode = 500, message = "Something went wrong" } = err;
+    res.status(statusCode).json({ message: message });
+  },
+  //Logging the error
+  (err, req, res, next) => {
+    console.log(err);
+    next();
+  }
+);
 
 app.listen(8080, () => {
   console.log("App is runnning on port 8080");
